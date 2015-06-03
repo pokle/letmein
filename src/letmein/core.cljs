@@ -8,12 +8,27 @@
 
 ;; define your app data so that it doesn't get over-written on reload
 
-(defonce app-state (atom {:text "Hello world!"}))
+(defonce app-state 
+    (atom 
+        {:text  "Hello world!"
+         :email "foo@example.com"
+         :pass  "asdf"}))
 
 (defn hello-world []
   [:h1 (:text @app-state)])
 
-(reagent/render-component [hello-world]
+(defn input [state-atom & key-path]
+    [:input {:value (get-in @state-atom key-path)
+             :on-change (fn [ev] (swap! state-atom assoc-in key-path (-> ev .-target .-value)))}])
+
+(defn login-prompt [message]
+    [:p 
+      [:em message] [:br]
+      [:label {:for } "email address:"] [input app-state :email] [:br]
+      [input app-state :pass]
+      ])
+
+(reagent/render-component [login-prompt "Welcome"]
                           (. js/document (getElementById "app")))
 
 
