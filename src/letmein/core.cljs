@@ -1,5 +1,5 @@
 (ns ^:figwheel-always letmein.core
-    (:require
+    (:require [clojure.string :as string]
               [reagent.core :as reagent :refer [atom]]))
 
 (enable-console-print!)
@@ -18,14 +18,20 @@
   [:h1 (:text @app-state)])
 
 (defn input [state-atom & key-path]
-    [:input {:value (get-in @state-atom key-path)
+    [:input {:id        (string/join (map name key-path))
+             :value     (get-in @state-atom key-path)
              :on-change (fn [ev] (swap! state-atom assoc-in key-path (-> ev .-target .-value)))}])
 
+(defn login [ev]
+  (.log js/console "logging in" (:email @app-state) (:pass @app-state))
+  (.preventDefault ev))
+
 (defn login-prompt [message]
-    [:p 
+    [:form 
       [:em message] [:br]
-      [:label {:for } "email address:"] [input app-state :email] [:br]
-      [input app-state :pass]
+      [:label {:for :email} "email address:"] [input app-state :email] [:br]
+      [:label {:for :pass} "password:"]       [input app-state :pass]  [:br]
+      [:input {:type :submit :on-click login}]
       ])
 
 (reagent/render-component [login-prompt "Welcome"]
