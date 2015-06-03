@@ -1,5 +1,6 @@
 (ns ^:figwheel-always letmein.core
     (:require [clojure.string :as string]
+              [ajax.core :refer [GET POST]]
               [reagent.core :as reagent :refer [atom]]))
 
 (enable-console-print!)
@@ -22,8 +23,19 @@
              :value     (get-in @state-atom key-path)
              :on-change (fn [ev] (swap! state-atom assoc-in key-path (-> ev .-target .-value)))}])
 
+(defn handler [response]
+  (.log js/console (str response)))
+
+(defn error-handler [{:keys [status status-text]}]
+  (.log js/console (str "something bad happened: " status " " status-text)))
+
+
 (defn login [ev]
   (.log js/console "logging in" (:email @app-state) (:pass @app-state))
+  (POST "/login" {:params {:email (:email @app-state) 
+                           :pass  (:pass @app-state)}
+         :handler handler
+         :error-handler error-handler})
   (.preventDefault ev))
 
 (defn login-prompt [message]
